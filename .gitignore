@@ -1,0 +1,51 @@
+# =============================================================================
+# Sulit Store Project .gitignore
+# Excludes secrets, large PDFs, runtime logs, and Agent/AI-specific files
+# =============================================================================
+
+# 1. Environment & Secrets (ISO/IEC 27001 Security)
+.env
+.env.*
+*.env
+.env.local
+
+# 2. Non-Important / Large Documents (PDFs)
+*.pdf
+
+# 3. Agent & AI-Specific Files & Markdown
+.agents/
+.neon/
+.neon
+skills-lock.json
+system_creation_guide.md
+*guide*.md
+*agent*.md
+*prompt*.md
+
+# 4. Local Database & Runtime Uploads / Logs
+database/*.db
+database/*.sqlite3
+sys_security_audit.log
+*.log
+uploads/*
+!uploads/.gitkeep
+
+# 5. Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# 6. Node Dependencies
+node_modules/
+package-lock.json
+
+# 7. OS Metadata & Clones
+.DS_Store
+Thumbs.db
+desktop.ini
+ProfitIntelligent/

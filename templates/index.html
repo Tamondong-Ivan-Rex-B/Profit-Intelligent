@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sulit Store | Profit-Intelligent POS & Inventory Management System</title>
+    <meta name="description" content="Vision-based automated item counting and expiration tracking for profit-intelligent inventory management and point-of-sale system with predictive analytics.">
+
+    <!-- Primary Stylesheets -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/receipt.css">
+
+    <!-- Chart.js for Financial & Predictive Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+    <!-- =========================================================================
+         App Header
+         ========================================================================= -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="brand-logo-icon">S</div>
+            <div class="brand-text">
+                <h1>Sulit Store <span class="brand-badge">PROFIT INTELLIGENT POS</span></h1>
+                <div style="font-size: 11px; color: var(--text-muted);">CPE 025A / Software Design 1 &bull; Team 8 (TIP QC)</div>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <!-- Active Role Selector (ISO/IEC 27001 RBAC Testing) -->
+            <div class="role-badge-container">
+                <span style="color: var(--text-muted); font-size: 11px; text-transform: uppercase;">Active Role:</span>
+                <select id="active-role-selector" title="Select Role for RBAC Testing">
+                    <option value="admin">Admin (Manager)</option>
+                    <option value="cashier">Cashier</option>
+                    <option value="customer">Customer</option>
+                </select>
+            </div>
+
+            <!-- Theme Toggle -->
+            <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Light/Dark Mode" aria-label="Toggle Light/Dark Mode">
+                <!-- Icon injected by JS -->
+            </button>
+        </div>
+    </header>
+
+    <!-- =========================================================================
+         Main App Layout: Sidebar + Dynamic Content Views
+         ========================================================================= -->
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <ul class="sidebar-nav-list">
+                <li>
+                    <a class="nav-link active" data-tab="pos-view">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <span>POS Cashier</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link" data-tab="inventory-view">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        <span>Inventory & Expiry</span>
+                    </a>
+                </li>
+                <li class="admin-only">
+                    <a class="nav-link" data-tab="analytics-view">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        <span>Profit Analytics</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link" data-tab="predictive-view">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        <span>Predictive & RMSE</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-link" data-tab="storefront-view">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                        <span>Online Pre-Orders</span>
+                    </a>
+                </li>
+                <li class="admin-only">
+                    <a class="nav-link" data-tab="srp-view">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                        <span>SRP Monitor (DTI)</span>
+                    </a>
+                </li>
+                <li class="admin-only">
+                    <a class="nav-link" data-tab="audit-view">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                        <span>Audit Log (ISO 27001)</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <strong>Sulit Store Capstone</strong>
+                <span>Software Design Project &bull; Team 8</span><br>
+                <span style="color: var(--brand-primary); font-weight: 600;">CpE Department &bull; TIP QC</span>
+            </div>
+        </aside>
+
+        <!-- Main Content Views -->
+        <main class="app-content">
+
+            <!-- =================================================================
+                 VIEW 1: Point-of-Sale (POS) Cashier Terminal
+                 ================================================================= -->
+            <section id="pos-view" class="tab-view active">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2>Point-of-Sale Checkout</h2>
+                        <p>Fast cashier checkout with Cash, GCash QR, and live inventory sync</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="openOCRModal('pos-barcode-input')">
+                            📷 Scan Expiration / OCR
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pos-layout">
+                    <!-- Left: Catalog & Search -->
+                    <div class="pos-catalog-panel">
+                        <div class="pos-search-bar">
+                            <input type="text" id="pos-barcode-input" class="search-input" placeholder="Scan barcode or press Enter to add..." autofocus>
+                            <input type="text" id="pos-search-input" class="search-input" placeholder="Search product name or SKU...">
+                        </div>
+
+                        <!-- Category Filter Pills -->
+                        <div id="pos-category-pills" class="category-pill-list"></div>
+
+                        <!-- Product Tiles Grid -->
+                        <div id="pos-product-grid" class="product-tiles-grid"></div>
+                    </div>
+
+                    <!-- Right: Cart & Payment Checkout -->
+                    <div class="pos-cart-panel glass-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 style="font-size: 18px;">Current Sale Cart</h3>
+                            <span id="pos-cart-count" class="badge badge-info">0</span>
+                        </div>
+
+                        <!-- Cart Items List -->
+                        <div id="pos-cart-items" class="cart-items-list">
+                            <div style="text-align: center; padding: 36px; color: var(--text-muted); font-size: 13px;">
+                                Cart is empty. Click items on the left to add.
+                            </div>
+                        </div>
+
+                        <!-- Total Math -->
+                        <div class="cart-total-box">
+                            <div class="cart-total-row">
+                                <span>Subtotal</span>
+                                <span id="pos-cart-subtotal">₱0.00</span>
+                            </div>
+                            <div class="cart-total-row">
+                                <span>VAT (12% Included)</span>
+                                <span>Included</span>
+                            </div>
+                            <div class="cart-total-row cart-grand-total">
+                                <span>TOTAL AMOUNT:</span>
+                                <span id="pos-cart-total">₱0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button id="pos-clear-cart-btn" class="btn btn-secondary" style="flex: 1;">Clear Cart</button>
+                            <button id="pos-checkout-btn" class="btn btn-primary" style="flex: 2;">
+                                Proceed to Payment &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 VIEW 2: Inventory & Expiration Tracking
+                 ================================================================= -->
+            <section id="inventory-view" class="tab-view">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2>Inventory & Expiration Tracking</h2>
+                        <p>Normalized product catalog, stock replenishment, and automated expiry warnings</p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="openAddProductModal()">
+                            + Add New Product
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Expiry KPI Overview -->
+                <div class="kpi-grid">
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-label">Total Registered Items</div>
+                        <div id="kpi-inv-total" class="kpi-value">0</div>
+                        <div class="kpi-sub">Active SKU listings in Sulit Store</div>
+                    </div>
+                    <div class="kpi-card amber glass-card">
+                        <div class="kpi-label">Expiring Soon (&le; 30 Days)</div>
+                        <div id="kpi-inv-nearexpiry" class="kpi-value" style="color: var(--status-warning);">0</div>
+                        <div class="kpi-sub">Priority for clearance / discounted sale</div>
+                    </div>
+                    <div class="kpi-card glass-card" style="border-left: 4px solid var(--status-danger);">
+                        <div class="kpi-label">Expired Products</div>
+                        <div id="kpi-inv-expired" class="kpi-value" style="color: var(--status-danger);">0</div>
+                        <div class="kpi-sub">Pull out immediately to protect public health</div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <input type="text" id="inv-search-input" class="search-input" style="max-width: 320px;" placeholder="Search SKU, name, or category...">
+                    <select id="inv-filter-category" class="form-select" style="max-width: 200px;">
+                        <option value="ALL">All Categories</option>
+                    </select>
+                    <select id="inv-filter-expiry" class="form-select" style="max-width: 200px;">
+                        <option value="ALL">All Expiry Statuses</option>
+                        <option value="EXPIRED">Expired Only</option>
+                        <option value="CRITICAL">Critical (&le; 14 Days)</option>
+                        <option value="WARNING">Warning (15-30 Days)</option>
+                        <option value="SAFE">Safe (&gt; 30 Days)</option>
+                    </select>
+                </div>
+
+                <!-- Product Table -->
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Product Details</th>
+                                <th>Category</th>
+                                <th class="admin-only">Cost (COGS)</th>
+                                <th>Retail Price</th>
+                                <th>Current Stock</th>
+                                <th>Expiration Date (ISO 8601)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body">
+                            <tr><td colspan="8" style="text-align: center; padding: 24px;">Loading inventory...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 VIEW 3: Profit Intelligence & Financial Analytics (Admin Only)
+                 ================================================================= -->
+            <section id="analytics-view" class="tab-view admin-only">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2>Profit Intelligence & Financial Analytics</h2>
+                        <p>Real-time gross profit margin tracking, COGS analytics, and sales volume breakdown</p>
+                    </div>
+                </div>
+
+                <!-- Executive Financial KPI Cards -->
+                <div class="kpi-grid">
+                    <div class="kpi-card cyan glass-card">
+                        <div class="kpi-label">Gross Sales Revenue</div>
+                        <div id="kpi-gross-revenue" class="kpi-value">₱0.00</div>
+                        <div class="kpi-sub">Total sales over reporting window</div>
+                    </div>
+                    <div class="kpi-card amber glass-card">
+                        <div class="kpi-label">Cost of Goods Sold (COGS)</div>
+                        <div id="kpi-total-cogs" class="kpi-value">₱0.00</div>
+                        <div class="kpi-sub">Wholesale acquisition costs</div>
+                    </div>
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-label">Gross Profit Margin</div>
+                        <div id="kpi-gross-margin" class="kpi-value" style="color: var(--brand-primary);">₱0.00</div>
+                        <div class="kpi-sub">Revenue minus COGS</div>
+                    </div>
+                    <div class="kpi-card blue glass-card">
+                        <div class="kpi-label">Profit Margin %</div>
+                        <div id="kpi-margin-pct" class="kpi-value" style="color: var(--brand-secondary);">0.0%</div>
+                        <div class="kpi-sub">Net retail margin percentage</div>
+                    </div>
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-label">Completed Orders</div>
+                        <div id="kpi-total-orders" class="kpi-value">0</div>
+                        <div class="kpi-sub">Total store transactions</div>
+                    </div>
+                </div>
+
+                <!-- Chart.js Visualization Grid -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 28px;">
+                    <div class="glass-card" style="padding: 20px; min-height: 380px;">
+                        <h3 style="font-size: 16px; margin-bottom: 14px;">Daily Revenue vs COGS vs Gross Profit Margin (14 Days)</h3>
+                        <div style="position: relative; height: 320px;">
+                            <canvas id="financial-trends-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="padding: 20px; min-height: 380px;">
+                        <h3 style="font-size: 16px; margin-bottom: 14px;">Profit Contribution by Category</h3>
+                        <div style="position: relative; height: 320px;">
+                            <canvas id="category-profit-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Sellers Table -->
+                <div class="glass-card" style="padding: 20px;">
+                    <h3 style="font-size: 16px; margin-bottom: 14px;">Top Fast-Moving High-Revenue Products</h3>
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Product Name</th>
+                                    <th>SKU</th>
+                                    <th>Quantity Sold</th>
+                                    <th>Total Revenue</th>
+                                </tr>
+                            </thead>
+                            <tbody id="top-sellers-table-body">
+                                <tr><td colspan="5" style="text-align: center; padding: 16px;">Loading top sellers...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 VIEW 4: Predictive Analytics, Depletion & Capstone Evaluation
+                 ================================================================= -->
+            <section id="predictive-view" class="tab-view">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2>Predictive Stock Analytics & Model Evaluation</h2>
+                        <p>Time-series moving averages, stockout projection dates, RMSE and System Error Rate benchmarks</p>
+                    </div>
+                </div>
+
+                <!-- Capstone Evaluation Panel -->
+                <div class="glass-card" style="padding: 24px; margin-bottom: 28px; border-left: 4px solid var(--brand-secondary);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 18px;">
+                        <div>
+                            <h3 style="font-size: 18px;">Capstone Quantitative Evaluation Suite</h3>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
+                                Benchmarks Section 4.1 (RMSE &le; minimized variance) & Section 4.2 (System Error Rate &lt; 0.05)
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="btn-run-rmse" class="btn btn-secondary" onclick="runRMSEBenchmark()">
+                                📊 Run RMSE Test
+                            </button>
+                            <button id="btn-run-ocr-eval" class="btn btn-secondary" onclick="runOCRErrorRateBenchmark()">
+                                🎯 Test OCR Error Rate
+                            </button>
+                            <button id="btn-run-stress-test" class="btn btn-primary" onclick="runPeakStressTest()">
+                                ⚡ Simulated Peak Stress Test
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Benchmark Results Cards -->
+                    <div id="rmse-benchmark-results" style="display: none; margin-top: 16px; padding: 16px; background: var(--bg-surface-elevated); border-radius: var(--radius-md);">
+                        <h4 style="color: var(--brand-secondary); font-size: 15px; margin-bottom: 8px;">Predictive Model RMSE Evaluation Results:</h4>
+                        <div style="display: flex; gap: 30px; margin-bottom: 14px;">
+                            <div>Overall RMSE: <strong id="rmse-overall-score" style="color: var(--brand-primary); font-size: 20px;">0.00</strong></div>
+                            <div>Total Evaluated Points: <strong id="rmse-total-datapoints">0</strong></div>
+                        </div>
+                        <div class="data-table-container" style="max-height: 220px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name (SKU)</th>
+                                        <th>Mean Daily Sales</th>
+                                        <th>RMSE (Forecast Error)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rmse-product-breakdown-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- OCR Error Rate Results -->
+                    <div id="ocr-eval-results" style="display: none; margin-top: 16px; padding: 16px; background: var(--bg-surface-elevated); border-radius: var(--radius-md);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <h4 style="color: var(--brand-secondary); font-size: 15px;">OCR Expiration Extraction Error Rate (Section 4.2):</h4>
+                            <div id="ocr-eval-status-badge"></div>
+                        </div>
+                        <div style="display: flex; gap: 30px; margin-bottom: 14px;">
+                            <div>Recognition Accuracy: <strong id="ocr-eval-accuracy" style="color: var(--brand-primary); font-size: 20px;">0%</strong></div>
+                            <div>System Error Rate: <strong id="ocr-eval-error-rate" style="color: var(--brand-secondary); font-size: 20px;">0.00</strong></div>
+                        </div>
+                        <div class="data-table-container" style="max-height: 200px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Sample Packaging Text</th>
+                                        <th>Expected Date (ISO 8601)</th>
+                                        <th>Extracted Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ocr-eval-trials-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Stress Test Results -->
+                    <div id="stress-test-results" style="display: none; margin-top: 16px; padding: 16px; background: var(--bg-surface-elevated); border-radius: var(--radius-md);">
+                        <h4 style="color: var(--brand-secondary); font-size: 15px; margin-bottom: 8px;">Simulated Peak Load Stress Test:</h4>
+                        <div style="display: flex; gap: 24px;">
+                            <div>Total Trials: <strong id="stress-total-trials">0</strong></div>
+                            <div>Successful Checkouts: <strong id="stress-success-count" style="color: var(--brand-primary);">0</strong></div>
+                            <div>System Error Rate: <strong id="stress-error-rate" style="color: var(--brand-primary);">0.00</strong></div>
+                            <div>Processing Throughput: <strong id="stress-throughput" style="color: var(--brand-secondary);">0 tx/s</strong></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stock Depletion Velocity & Forecast Table -->
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Product Name</th>
+                                <th>Current Stock</th>
+                                <th>Sales Velocity</th>
+                                <th>Projected Days to Stockout</th>
+                                <th>Stockout Date</th>
+                                <th>Recommended ROP</th>
+                                <th>Velocity Tier</th>
+                            </tr>
+                        </thead>
+                        <tbody id="predictive-depletion-tbody">
+                            <tr><td colspan="8" style="text-align: center; padding: 24px;">Loading predictive stock velocity...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 VIEW 5: Customer Storefront & Pre-Orders
+                 ================================================================= -->
+            <section id="storefront-view" class="tab-view">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2>Sulit Store Online Pre-Ordering Portal</h2>
+                        <p>Customer self-service advance order placement for convenient in-store pickup & GCash</p>
+                    </div>
+                </div>
+
+                <div class="pos-layout">
+                    <!-- Left: Online Catalog -->
+                    <div>
+                        <h3 style="font-size: 16px; margin-bottom: 14px;">In-Stock Product Menu</h3>
+                        <div id="storefront-product-grid" class="product-tiles-grid"></div>
+
+                        <!-- Cashier View: Orders Queue -->
+                        <div style="margin-top: 36px;">
+                            <h3 style="font-size: 16px; margin-bottom: 12px;">Active Pre-Orders Pickup Queue</h3>
+                            <div class="data-table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Order Ref</th>
+                                            <th>Customer</th>
+                                            <th>Total</th>
+                                            <th>Payment</th>
+                                            <th>Status</th>
+                                            <th>Time</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="pickup-orders-queue-tbody">
+                                        <tr><td colspan="7" style="text-align: center; padding: 16px;">No orders in queue</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Online Order Cart & Checkout -->
+                    <div class="glass-card" style="padding: 20px; height: fit-content;">
+                        <h3 style="font-size: 18px; margin-bottom: 14px;">Pickup Pre-Order Cart</h3>
+                        <div id="storefront-cart-items" class="cart-items-list" style="max-height: 250px;">
+                            <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 13px;">
+                                Your pickup cart is empty.
+                            </div>
+                        </div>
+
+                        <div class="cart-total-box">
+                            <div class="cart-total-row cart-grand-total">
+                                <span>ORDER TOTAL:</span>
+                                <span id="storefront-cart-total">₱0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Customer Details Form -->
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" id="storefront-cust-name" class="form-input" placeholder="e.g., Juan Dela Cruz">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact Mobile Number *</label>
+                            <input type="text" id="storefront-cust-phone" class="form-input" placeholder="0917-xxx-xxxx">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Payment Method</label>
+                            <select id="storefront-payment-method" class="form-select">
+                                <option value="Cash">Cash on Counter Pickup</option>
+                                <option value="GCash">GCash Advance Payment</option>
+                            </select>
+                        </div>
+
+                        <!-- GCash Advance Box -->
+                        <div id="storefront-gcash-box" style="display: none; background: rgba(0, 102, 245, 0.1); border: 1px solid var(--brand-gcash); padding: 12px; border-radius: var(--radius-md); margin-bottom: 14px;">
+                            <div style="font-size: 12px; font-weight: 700; color: var(--brand-gcash); margin-bottom: 4px;">SEND TO GCASH: 0917-123-4567</div>
+                            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">Account Name: SULIT STORE OFFICIAL</div>
+                            <input type="text" id="storefront-gcash-ref" class="form-input" placeholder="Enter GCash Ref Number...">
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="submitStorefrontOrder()">
+                            Confirm In-Store Pre-Order &rarr;
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 VIEW 6: Suggested Retail Price (SRP) Monitor (Admin Only)
+                 ================================================================= -->
+            <section id="srp-view" class="tab-view admin-only">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2>Suggested Retail Price (SRP) Market Monitor</h2>
+                        <p>Department of Trade and Industry (DTI) price ceiling compliance and competitive retail benchmarking</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="syncSRPBenchmarks()">
+                        🔄 Sync DTI SRP Benchmarks
+                    </button>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Product Name</th>
+                                <th>Sulit Cost (COGS)</th>
+                                <th>Sulit Retail Price</th>
+                                <th>DTI Market SRP Range</th>
+                                <th>Price Status</th>
+                                <th>Optimization Advice</th>
+                            </tr>
+                        </thead>
+                        <tbody id="srp-comparison-tbody">
+                            <tr><td colspan="7" style="text-align: center; padding: 24px;">Loading SRP benchmarks...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- =================================================================
+                 VIEW 7: Security Audit Logs (ISO/IEC 27001)
+                 ================================================================= -->
+            <section id="audit-view" class="tab-view admin-only">
+                <div class="view-header">
+                    <div class="view-title-group">
+                        <h2>Security Audit Logs (ISO/IEC 27001)</h2>
+                        <p>Tamper-evident logs of logins, checkouts, stock modifications, and administrative actions</p>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Target Resource</th>
+                                <th>Status</th>
+                                <th>Event Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="audit-logs-tbody">
+                            <tr><td colspan="6" style="text-align: center; padding: 24px;">Loading audit logs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- =========================================================================
+         MODALS
+         ========================================================================= -->
+
+    <!-- Modal 1: Payment Modal -->
+    <div id="payment-modal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3>Select Payment Method</h3>
+                <button class="modal-close-btn" onclick="closePaymentModal()">&times;</button>
+            </div>
+
+            <div style="font-size: 26px; font-weight: 800; color: var(--brand-primary); text-align: center; margin-bottom: 20px;" id="payment-modal-total">
+                ₱0.00
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn btn-secondary pay-method-tab active" data-method="Cash" style="flex: 1;" onclick="selectPaymentMethod('Cash')">
+                    💵 Cash
+                </button>
+                <button class="btn btn-secondary pay-method-tab" data-method="GCash" style="flex: 1;" onclick="selectPaymentMethod('GCash')">
+                    📱 GCash QR
+                </button>
+                <button class="btn btn-secondary pay-method-tab" data-method="Debit" style="flex: 1;" onclick="selectPaymentMethod('Debit')">
+                    💳 Debit Card
+                </button>
+            </div>
+
+            <!-- Cash Panel -->
+            <div id="pay-method-cash-panel">
+                <div class="form-group">
+                    <label class="form-label">Amount Tendered (PHP)</label>
+                    <input type="number" id="payment-tendered-input" class="form-input" style="font-size: 20px; font-weight: 700;" oninput="updateChangeMath()">
+                </div>
+
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                    <button class="btn btn-secondary btn-sm" onclick="setQuickCash('exact')">Exact</button>
+                    <button class="btn btn-secondary btn-sm" onclick="setQuickCash(50)">₱50</button>
+                    <button class="btn btn-secondary btn-sm" onclick="setQuickCash(100)">₱100</button>
+                    <button class="btn btn-secondary btn-sm" onclick="setQuickCash(500)">₱500</button>
+                    <button class="btn btn-secondary btn-sm" onclick="setQuickCash(1000)">₱1000</button>
+                </div>
+
+                <div style="background: var(--bg-surface-elevated); padding: 14px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 14px; font-weight: 600;">Change Due:</span>
+                    <strong id="payment-change-display" style="font-size: 22px; color: var(--brand-primary);">₱0.00</strong>
+                </div>
+            </div>
+
+            <!-- GCash Panel -->
+            <div id="pay-method-gcash-panel" style="display: none; text-align: center;">
+                <div style="background: #ffffff; padding: 14px; display: inline-block; border-radius: var(--radius-md); margin-bottom: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                    <!-- Simulated Clean GCash QR SVG -->
+                    <svg width="180" height="180" viewBox="0 0 100 100">
+                        <rect width="100" height="100" fill="#ffffff" />
+                        <rect x="10" y="10" width="25" height="25" fill="#005ce6" />
+                        <rect x="15" y="15" width="15" height="15" fill="#ffffff" />
+                        <rect x="18" y="18" width="9" height="9" fill="#005ce6" />
+                        
+                        <rect x="65" y="10" width="25" height="25" fill="#005ce6" />
+                        <rect x="70" y="15" width="15" height="15" fill="#ffffff" />
+                        <rect x="73" y="18" width="9" height="9" fill="#005ce6" />
+                        
+                        <rect x="10" y="65" width="25" height="25" fill="#005ce6" />
+                        <rect x="15" y="70" width="15" height="15" fill="#ffffff" />
+                        <rect x="18" y="73" width="9" height="9" fill="#005ce6" />
+
+                        <!-- Data pattern dots -->
+                        <rect x="42" y="12" width="6" height="6" fill="#005ce6" />
+                        <rect x="52" y="18" width="6" height="6" fill="#005ce6" />
+                        <rect x="42" y="42" width="16" height="16" fill="#005ce6" />
+                        <rect x="65" y="45" width="8" height="8" fill="#005ce6" />
+                        <rect x="75" y="60" width="12" height="12" fill="#005ce6" />
+                        <rect x="45" y="75" width="10" height="10" fill="#005ce6" />
+                        <rect x="60" y="80" width="8" height="8" fill="#005ce6" />
+                    </svg>
+                </div>
+                <div style="font-weight: 700; color: var(--brand-gcash); font-size: 15px;">SULIT STORE OFFICIAL</div>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 12px;">Mobile No: 0917-123-4567</div>
+
+                <div class="form-group" style="text-align: left;">
+                    <label class="form-label">GCash Reference Number *</label>
+                    <input type="text" id="payment-gcash-ref-input" class="form-input" placeholder="e.g. 1002 9384 1029">
+                </div>
+            </div>
+
+            <!-- Debit Card Panel -->
+            <div id="pay-method-debit-panel" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">POS Terminal Trace No / Auth Code</label>
+                    <input type="text" class="form-input" placeholder="e.g. TRC-847291">
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closePaymentModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 2;" onclick="submitCheckout()">Confirm & Print Receipt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Printable 80mm Thermal Receipt -->
+    <div id="printable-receipt-modal" class="modal-overlay">
+        <div class="modal-window" style="max-width: 420px; background: #f3f4f6; color: #111;">
+            <div class="modal-header no-print">
+                <h3 style="color: #111;">Official Receipt</h3>
+                <button class="modal-close-btn" style="color: #111;" onclick="closeReceiptModal()">&times;</button>
+            </div>
+
+            <div id="printable-receipt-content"></div>
+
+            <div class="no-print" style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeReceiptModal()">Close</button>
+                <button class="btn btn-primary" style="flex: 2;" onclick="printReceipt()">🖨️ Print Receipt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Restock Inventory -->
+    <div id="restock-modal" class="modal-overlay">
+        <div class="modal-window" style="max-width: 460px;">
+            <div class="modal-header">
+                <h3>Restock Inventory</h3>
+                <button class="modal-close-btn" onclick="closeRestockModal()">&times;</button>
+            </div>
+            <input type="hidden" id="restock-sku">
+            <div style="margin-bottom: 14px;">
+                <strong id="restock-title" style="font-size: 16px;">Product</strong>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">
+                    Current Stock: <strong id="restock-current-stock" style="color: var(--brand-primary);">0</strong>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Add Stock Quantity *</label>
+                <input type="number" id="restock-adjustment-input" class="form-input" min="1" value="10">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Restock Reason</label>
+                <select id="restock-reason" class="form-select">
+                    <option value="Supplier Delivery">Supplier Delivery / Bulk Restock</option>
+                    <option value="Inventory Audit Adjustment">Inventory Audit Adjustment</option>
+                    <option value="Return to Shelf">Return to Shelf</option>
+                </select>
+            </div>
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeRestockModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 2;" onclick="submitRestock()">Save Stock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Add / Edit Product Form -->
+    <div id="product-form-modal" class="modal-overlay">
+        <div class="modal-window">
+            <div class="modal-header">
+                <h3 id="prod-modal-title">Register Product</h3>
+                <button class="modal-close-btn" onclick="closeProductFormModal()">&times;</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                    <label class="form-label">SKU *</label>
+                    <input type="text" id="prod-form-sku" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Barcode (UPC / EAN)</label>
+                    <input type="text" id="prod-form-barcode" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Product Name *</label>
+                <input type="text" id="prod-form-name" class="form-input" placeholder="e.g., Century Tuna Flakes 155g">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select id="prod-form-category" class="form-select">
+                        <option value="Canned Goods">Canned Goods</option>
+                        <option value="Instant Noodles">Instant Noodles</option>
+                        <option value="Beverages">Beverages</option>
+                        <option value="Dairy">Dairy</option>
+                        <option value="Snacks">Snacks</option>
+                        <option value="Condiments">Condiments</option>
+                        <option value="Liquor & Beer">Liquor & Beer</option>
+                        <option value="Bakery">Bakery</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Unit Measure</label>
+                    <input type="text" id="prod-form-unit" class="form-input" value="piece">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group admin-only">
+                    <label class="form-label">Cost Price / COGS (₱) *</label>
+                    <input type="number" step="0.01" id="prod-form-cost" class="form-input" value="25.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Retail Selling Price (₱) *</label>
+                    <input type="number" step="0.01" id="prod-form-retail" class="form-input" value="35.00">
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                    <label class="form-label">Initial Stock *</label>
+                    <input type="number" id="prod-form-stock" class="form-input" value="50">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Reorder Threshold *</label>
+                    <input type="number" id="prod-form-reorder" class="form-input" value="15">
+                </div>
+            </div>
+
+            <!-- Expiration Date with OCR Camera Trigger -->
+            <div class="form-group" style="background: rgba(16, 185, 129, 0.08); border: 1px dashed var(--brand-primary); padding: 14px; border-radius: var(--radius-md);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label class="form-label" style="margin-bottom: 0;">Expiration Date (ISO 8601: YYYY-MM-DD)</label>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="openOCRModal('prod-form-expiry')">
+                        📷 Scan via Camera / OCR
+                    </button>
+                </div>
+                <input type="date" id="prod-form-expiry" class="form-input">
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                    Use the Computer Vision OCR scanner to automatically read printed packaging dates.
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeProductFormModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 2;" onclick="submitProductForm()">Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: Computer Vision OCR Expiration Scanner -->
+    <div id="ocr-scanner-modal" class="modal-overlay">
+        <div class="modal-window" style="max-width: 680px;">
+            <div class="modal-header">
+                <div>
+                    <h3>Computer Vision OCR Expiration Scanner</h3>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                        OpenCV Pre-Processing + Automated ISO 8601 Date Parsing
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeOCRModal()">&times;</button>
+            </div>
+
+            <!-- Camera Viewport with Target Box -->
+            <div class="cv-scanner-container">
+                <video id="ocr-video-feed" class="cv-scanner-video" autoplay playsinline style="display: none;"></video>
+                <div id="ocr-camera-placeholder" style="display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-muted); padding: 20px; text-align: center;">
+                    <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span>Click "Start Camera" to scan packaging live, or upload an image below</span>
+                </div>
+                <div class="cv-target-box"></div>
+            </div>
+
+            <!-- Camera Controls -->
+            <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+                <button class="btn btn-secondary btn-sm" onclick="startCamera()">▶ Start Live Camera</button>
+                <button class="btn btn-primary btn-sm" onclick="captureVideoFrame()">📸 Capture & Process Frame</button>
+                <button class="btn btn-secondary btn-sm" onclick="stopCamera()">⏹ Stop Camera</button>
+                <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin-bottom: 0;">
+                    📁 Upload Photo
+                    <input type="file" id="ocr-file-upload" accept="image/*" style="display: none;">
+                </label>
+            </div>
+
+            <!-- Synthetic Sample Test Cases for Defense / Evaluators -->
+            <div style="margin-top: 14px; background: var(--bg-surface-elevated); padding: 12px; border-radius: var(--radius-md);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px;">
+                    Instant Capstone Presets (Test Synthetic Retail Packaging):
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn btn-secondary btn-sm" onclick="testSamplePackaging('can')">🥫 Corned Beef (2027-05-18)</button>
+                    <button class="btn btn-secondary btn-sm" onclick="testSamplePackaging('milk')">🥛 Powdered Milk (15 OCT 2026)</button>
+                    <button class="btn btn-secondary btn-sm" onclick="testSamplePackaging('bread')">🍞 Bread (24/12/2026)</button>
+                    <button class="btn btn-secondary btn-sm" onclick="testSamplePackaging('sardines')">🐟 Sardines (08/2027)</button>
+                </div>
+            </div>
+
+            <!-- OpenCV Pipeline Visual Inspection -->
+            <div id="ocr-filter-previews" style="display: none; margin-top: 16px;">
+                <div style="font-size: 12px; font-weight: 700; color: var(--brand-secondary); margin-bottom: 6px;">
+                    OpenCV Computer Vision Filtering Pipeline (Visual Audit):
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="text-align: center;">
+                        <img id="ocr-preview-gray" style="width: 100%; height: 110px; object-fit: contain; background: #000; border-radius: 4px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">1. Grayscale & Bilateral Blur</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <img id="ocr-preview-thresh" style="width: 100%; height: 110px; object-fit: contain; background: #000; border-radius: 4px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">2. Adaptive Gaussian Thresholding</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Extraction Results -->
+            <div id="ocr-results-box" style="display: none; margin-top: 16px; background: rgba(16, 185, 129, 0.1); border: 1px solid var(--brand-primary); padding: 14px; border-radius: var(--radius-md);">
+                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--brand-primary); margin-bottom: 4px;">Detected Expiration Date:</div>
+                <div id="ocr-detected-date-display" style="font-size: 18px; margin-bottom: 10px;">Awaiting scan...</div>
+                <div id="ocr-matches-list"></div>
+            </div>
+
+            <div id="ocr-status-message" style="font-size: 12px; color: var(--brand-secondary); margin-top: 8px;"></div>
+        </div>
+    </div>
+
+    <!-- Modal 6: Online Pre-order Confirmation Slip -->
+    <div id="pickup-modal" class="modal-overlay">
+        <div class="modal-window" style="max-width: 440px; text-align: center;">
+            <div style="width: 60px; height: 60px; border-radius: var(--radius-full); background: rgba(16, 185, 129, 0.2); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 16px auto;">
+                ✓
+            </div>
+            <h3 style="font-size: 20px; margin-bottom: 6px;">Pre-Order Confirmed!</h3>
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 18px;">
+                Your items have been reserved at Sulit Store counter.
+            </p>
+
+            <div style="background: var(--bg-surface-elevated); padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Pickup Reference Code:</div>
+                <div id="pickup-ref-number" style="font-size: 22px; font-weight: 800; color: var(--brand-secondary); letter-spacing: 1px; font-family: monospace; margin: 4px 0 10px 0;">ORD-1234</div>
+                <div style="font-size: 13px;">Customer: <strong id="pickup-cust-name">-</strong></div>
+                <div style="font-size: 13px; margin-top: 2px;">Total Due: <strong id="pickup-total-amount" style="color: var(--brand-primary);">-</strong></div>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%;" onclick="closePickupModal()">Done</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Application Script Modules -->
+    <script src="/static/js/app.js"></script>
+    <script src="/static/js/pos.js"></script>
+    <script src="/static/js/inventory.js"></script>
+    <script src="/static/js/ocr.js"></script>
+    <script src="/static/js/analytics.js"></script>
+    <script src="/static/js/predictive.js"></script>
+    <script src="/static/js/storefront.js"></script>
+</body>
+</html>
