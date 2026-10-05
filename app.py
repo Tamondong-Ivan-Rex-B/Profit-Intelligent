@@ -36,6 +36,9 @@ from modules.audit_logger import log_security_event
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 app.config.from_object(Config)
+app.config["SESSION_COOKIE_SECURE"] = Config.SESSION_COOKIE_SECURE
+app.config["SESSION_COOKIE_HTTPONLY"] = Config.SESSION_COOKIE_HTTPONLY
+app.config["SESSION_COOKIE_SAMESITE"] = Config.SESSION_COOKIE_SAMESITE
 CORS(app)
 
 # Ensure upload directory exists
@@ -918,6 +921,7 @@ if __name__ == "__main__":
     print("=" * 70)
     print("Sulit Store Profit-Intelligent POS & Inventory System")
     print(f"Developer: {Config.STUDENT_NAME} (ID: {Config.STUDENT_ID})")
-    print(f"Course: {Config.COURSE} | Server running on http://127.0.0.1:5000")
+    print(f"Mode: {Config.DEPLOYMENT_MODE.upper()} | DB: {Config.DB_ENGINE.upper()} | SRP: {Config.SRP_PROVIDER.upper()}")
+    print(f"Course: {Config.COURSE} | Server running on http://{Config.HOST}:{Config.PORT}")
     print("=" * 70)
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host=Config.HOST, port=Config.PORT, debug=Config.DEBUG)

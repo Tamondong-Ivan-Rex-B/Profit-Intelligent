@@ -10,6 +10,7 @@ Calculates:
 """
 import numpy as np
 from datetime import datetime, timedelta
+from config import Config
 from database.db import query_db
 
 def calculate_rmse(actual_sales, forecasted_sales):
@@ -25,11 +26,13 @@ def calculate_rmse(actual_sales, forecasted_sales):
     return round(float(rmse), 4)
 
 
-def get_sku_daily_sales(sku: str, days: int = 14):
+def get_sku_daily_sales(sku: str, days: int = None):
     """
     Fetch daily sales quantity for a specific SKU over past N days.
     Returns list of daily sold quantities indexed from oldest to newest.
     """
+    if days is None:
+        days = Config.SALES_HISTORY_WINDOW_DAYS
     cutoff_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
     
     rows = query_db(
@@ -53,16 +56,21 @@ def get_sku_daily_sales(sku: str, days: int = 14):
     return daily_quantities
 
 
-def forecast_sku_depletion(sku: str, lead_time_days: int = 3, safety_stock_days: int = 2):
+def forecast_sku_depletion(sku: str, lead_time_days: int = None, safety_stock_days: int = None):
     """
     Compute depletion forecast, velocity, days remaining, and recommended reorder point.
     """
+    if lead_time_days is None:
+        lead_time_days = Config.DEFAULT_LEAD_TIME_DAYS
+    if safety_stock_days is None:
+        safety_stock_days = Config.DEFAULT_SAFETY_STOCK_DAYS
+        
     product = query_db("SELECT * FROM tbl_product_master WHERE sku = ?", (sku,), one=True)
     if not product:
         return None
         
     current_stock = product['current_stock_qty']
-    daily_sales = get_sku_daily_sales(sku, days=14)
+    daily_sales = get_sku_daily_sales(sku, days=Config.SALES_HISTORY_WINDOW_DAYS)
     
     if not daily_sales or sum(daily_sales) == 0:
         return {

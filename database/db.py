@@ -47,11 +47,12 @@ def get_db_connection():
         finally:
             conn.close()
     else:
-        # Default SQLite
+        # Default SQLite (Optimized for zero-latency localhost performance)
         os.makedirs(os.path.dirname(Config.SQLITE_PATH), exist_ok=True)
-        conn = sqlite3.connect(Config.SQLITE_PATH)
+        conn = sqlite3.connect(Config.SQLITE_PATH, timeout=20.0)
         conn.row_factory = dict_factory
         conn.execute("PRAGMA foreign_keys = ON;")
+        conn.execute("PRAGMA journal_mode = WAL;")
         try:
             yield conn
             conn.commit()

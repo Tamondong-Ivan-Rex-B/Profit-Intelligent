@@ -5,6 +5,7 @@ Tracks Department of Trade and Industry (DTI) SRP benchmarks and online retail p
 to protect Sulit Store's profit margins while staying competitive within legal limits.
 """
 from datetime import datetime
+from config import Config
 from database.db import query_db, execute_db
 
 # Standard DTI SRP and Market Retail Price Reference Data for Philippine Basic Necessities
@@ -32,6 +33,19 @@ DTI_BENCHMARK_DATABASE = {
     "SKU-PAS-EXP": {"name": "Chiz Boy Spread 220g", "srp_min": 56.00, "srp_max": 62.00, "source": "Supermarket Index"}
 }
 
+def get_srp_benchmark(sku: str, product=None):
+    """
+    Modular SRP benchmark resolver supporting offline local cache and future live web providers.
+    """
+    if Config.SRP_PROVIDER == "offline_cache":
+        return DTI_BENCHMARK_DATABASE.get(sku, {
+            "name": product['product_name'] if product else sku,
+            "srp_min": (product['retail_price'] * 0.95) if product else 0.0,
+            "srp_max": (product['retail_price'] * 1.05) if product else 0.0,
+            "source": "Local DTI Baseline"
+        })
+    return DTI_BENCHMARK_DATABASE.get(sku)
+
 def analyze_sku_pricing(sku: str):
     """
     Compare Sulit Store's current retail price and COGS against DTI SRP benchmarks.
@@ -41,12 +55,7 @@ def analyze_sku_pricing(sku: str):
     if not product:
         return None
 
-    benchmark = DTI_BENCHMARK_DATABASE.get(sku, {
-        "name": product['product_name'],
-        "srp_min": product['retail_price'] * 0.95,
-        "srp_max": product['retail_price'] * 1.05,
-        "source": "Estimated Retail Range"
-    })
+    benchmark = get_srp_benchmark(sku, product)
 
     cost = product['cost_price']
     current_retail = product['retail_price']
